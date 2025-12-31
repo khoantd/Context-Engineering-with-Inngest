@@ -30,25 +30,16 @@ export const synthesizerAgent = inngest.createFunction(
       );
     });
 
+    // Format agent responses for synthesis
+    const agentInputs = agentResults
+      .map((result) => {
+        const agentName =
+          result.agent.charAt(0).toUpperCase() + result.agent.slice(1);
+        return `--- ${agentName} Agent (${result.model}) ---\n${result.response}`;
+      })
+      .join("\n\n");
+
     const result = await step.run("gpt4-synthesis", async () => {
-      await publish(
-        researchChannel(sessionId)["agent-update"]({
-          agent: "synthesizer",
-          status: "running",
-          message: `${modelInfo.synthesizer.name}: Combining insights from all agents`,
-          timestamp: new Date().toISOString(),
-        })
-      );
-
-      // Format agent responses for synthesis
-      const agentInputs = agentResults
-        .map((result) => {
-          const agentName =
-            result.agent.charAt(0).toUpperCase() + result.agent.slice(1);
-          return `--- ${agentName} Agent (${result.model}) ---\n${result.response}`;
-        })
-        .join("\n\n");
-
       const { textStream } = await streamText({
         model: models.synthesizer,
         prompt: `You are a synthesis specialist. You have received analyses from multiple AI agents, each with different specializations. Your job is to synthesize their insights into a single, comprehensive, coherent answer.
@@ -69,10 +60,19 @@ Your synthesized response:`,
 
       let fullResponse = "";
 
-      // Stream the final response
+      // Collect all chunks first
+      const chunks: string[] = [];
       for await (const chunk of textStream) {
         fullResponse += chunk;
+        chunks.push(chunk);
+      }
 
+      return { fullResponse, chunks };
+    });
+
+    // Handle streaming outside of step.run to avoid nesting
+    await step.run("stream-synthesis", async () => {
+      for await (const chunk of result.chunks) {
         // Publish to main AI chunk topic for backward compatibility
         publish(
           researchChannel(sessionId)["ai-chunk"]({
@@ -92,8 +92,10 @@ Your synthesized response:`,
           })
         ).catch((err) => console.error("Error publishing agent chunk:", err));
       }
+    });
 
-      // Signal completion
+    // Signal completion
+    await step.run("publish-synthesis-complete", async () => {
       await publish(
         researchChannel(sessionId)["ai-chunk"]({
           chunk: "",
@@ -110,8 +112,6 @@ Your synthesized response:`,
           timestamp: new Date().toISOString(),
         })
       );
-
-      return fullResponse;
     });
 
     const duration = Date.now() - startTime;
@@ -130,7 +130,7 @@ Your synthesized response:`,
 
     return {
       agent: "synthesizer" as const,
-      response: result,
+      response: result.fullResponse,
       model: "gpt-4-turbo-preview",
       duration,
     };

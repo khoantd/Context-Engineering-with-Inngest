@@ -2,7 +2,6 @@ import { inngest } from "../../client";
 import { researchChannel } from "../../channels";
 import { models, modelInfo } from "@/lib/ai-models";
 import { streamText } from "ai";
-import { publishTokenByTokenUpdates } from "@/lib/utils";
 import type { ContextItem } from "../../types";
 
 export const analystAgent = inngest.createFunction(
@@ -42,15 +41,6 @@ export const analystAgent = inngest.createFunction(
 
     // Generate analysis with streaming
     const result = await step.run("gpt4-analysis", async () => {
-      await publish(
-        researchChannel(sessionId)["agent-update"]({
-          agent: "analyst",
-          status: "running",
-          message: `${modelInfo.analyst.name}: Analyzing context in detail`,
-          timestamp: new Date().toISOString(),
-        })
-      );
-
       const contextText = contexts
         .map((c: ContextItem | null, i: number) => {
           if (!c) return `[${i + 1}] No context available`;
@@ -70,19 +60,39 @@ ${contextText}
 Provide your detailed analysis:`,
       });
 
-      const fullResponse = await publishTokenByTokenUpdates(
-        textStream,
-        async (message) => {
-          return publish(
-            researchChannel(sessionId)["agent-chunk"]({
-              agent: "analyst",
-              ...message,
-            })
-          );
-        }
-      );
+      // Collect all chunks first
+      const chunks: string[] = [];
+      let fullResponse = "";
+      for await (const chunk of textStream) {
+        fullResponse += chunk;
+        chunks.push(chunk);
+      }
 
-      return fullResponse;
+      return { fullResponse, chunks };
+    });
+
+    // Publish streaming updates outside of step.run to avoid nesting
+    await step.run("publish-analysis-streaming", async () => {
+      for await (const chunk of result.chunks) {
+        await publish(
+          researchChannel(sessionId)["agent-chunk"]({
+            agent: "analyst",
+            chunk,
+            isComplete: false,
+            timestamp: new Date().toISOString(),
+          })
+        );
+      }
+      
+      // Signal completion
+      await publish(
+        researchChannel(sessionId)["agent-chunk"]({
+          agent: "analyst",
+          chunk: "",
+          isComplete: true,
+          timestamp: new Date().toISOString(),
+        })
+      );
     });
 
     const duration = Date.now() - startTime;
@@ -102,7 +112,7 @@ Provide your detailed analysis:`,
       await publish(
         researchChannel(sessionId)["agent-result"]({
           agent: "analyst",
-          response: result,
+          response: result.fullResponse,
           model: "gpt-4-turbo-preview",
           timestamp: new Date().toISOString(),
         })
@@ -111,7 +121,7 @@ Provide your detailed analysis:`,
 
     return {
       agent: "analyst" as const,
-      response: result,
+      response: result.fullResponse,
       model: "gpt-4-turbo-preview",
       duration,
     };
