@@ -70,8 +70,8 @@ Provide your classification and categorization:`,
     });
 
     // Publish streaming updates outside of step.run to avoid nesting
-    await step.run("publish-classifier-streaming", async () => {
-      for await (const chunk of result.chunks) {
+    for (const chunk of result.chunks) {
+      await step.run(`publish-classifier-chunk-${Math.random().toString(36).substr(2, 9)}`, async () => {
         await publish(
           researchChannel(sessionId)["agent-chunk"]({
             agent: "classifier",
@@ -80,9 +80,11 @@ Provide your classification and categorization:`,
             timestamp: new Date().toISOString(),
           })
         );
-      }
-      
-      // Signal completion
+      });
+    }
+    
+    // Signal completion
+    await step.run("publish-classifier-complete-signal", async () => {
       await publish(
         researchChannel(sessionId)["agent-chunk"]({
           agent: "classifier",

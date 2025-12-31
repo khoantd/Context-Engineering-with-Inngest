@@ -71,8 +71,8 @@ Your synthesized response:`,
     });
 
     // Handle streaming outside of step.run to avoid nesting
-    await step.run("stream-synthesis", async () => {
-      for await (const chunk of result.chunks) {
+    for (const chunk of result.chunks) {
+      await step.run(`publish-synthesizer-chunk-${Math.random().toString(36).substr(2, 9)}`, async () => {
         // Publish to main AI chunk topic for backward compatibility
         publish(
           researchChannel(sessionId)["ai-chunk"]({
@@ -91,8 +91,8 @@ Your synthesized response:`,
             timestamp: new Date().toISOString(),
           })
         ).catch((err) => console.error("Error publishing agent chunk:", err));
-      }
-    });
+      });
+    }
 
     // Signal completion
     await step.run("publish-synthesis-complete", async () => {

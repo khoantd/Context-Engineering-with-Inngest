@@ -70,8 +70,8 @@ Provide a concise summary with key points:`,
     });
 
     // Publish streaming updates outside of step.run to avoid nesting
-    await step.run("publish-summarizer-streaming", async () => {
-      for await (const chunk of result.chunks) {
+    for (const chunk of result.chunks) {
+      await step.run(`publish-summarizer-chunk-${Math.random().toString(36).substr(2, 9)}`, async () => {
         await publish(
           researchChannel(sessionId)["agent-chunk"]({
             agent: "summarizer",
@@ -80,9 +80,11 @@ Provide a concise summary with key points:`,
             timestamp: new Date().toISOString(),
           })
         );
-      }
-      
-      // Signal completion
+      });
+    }
+    
+    // Signal completion
+    await step.run("publish-summarizer-complete-signal", async () => {
       await publish(
         researchChannel(sessionId)["agent-chunk"]({
           agent: "summarizer",

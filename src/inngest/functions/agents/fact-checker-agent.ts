@@ -70,8 +70,8 @@ Provide your fact-checking analysis:`,
     });
 
     // Publish streaming updates outside of step.run to avoid nesting
-    await step.run("publish-fact-checker-streaming", async () => {
-      for await (const chunk of result.chunks) {
+    for (const chunk of result.chunks) {
+      await step.run(`publish-fact-checker-chunk-${Math.random().toString(36).substr(2, 9)}`, async () => {
         await publish(
           researchChannel(sessionId)["agent-chunk"]({
             agent: "factChecker",
@@ -80,9 +80,11 @@ Provide your fact-checking analysis:`,
             timestamp: new Date().toISOString(),
           })
         );
-      }
-      
-      // Signal completion
+      });
+    }
+    
+    // Signal completion
+    await step.run("publish-fact-checker-complete-signal", async () => {
       await publish(
         researchChannel(sessionId)["agent-chunk"]({
           agent: "factChecker",

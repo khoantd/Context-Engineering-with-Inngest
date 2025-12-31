@@ -72,8 +72,8 @@ Provide your detailed analysis:`,
     });
 
     // Publish streaming updates outside of step.run to avoid nesting
-    await step.run("publish-analysis-streaming", async () => {
-      for await (const chunk of result.chunks) {
+    for (const chunk of result.chunks) {
+      await step.run(`publish-analyst-chunk-${Math.random().toString(36).substr(2, 9)}`, async () => {
         await publish(
           researchChannel(sessionId)["agent-chunk"]({
             agent: "analyst",
@@ -82,9 +82,11 @@ Provide your detailed analysis:`,
             timestamp: new Date().toISOString(),
           })
         );
-      }
-      
-      // Signal completion
+      });
+    }
+    
+    // Signal completion
+    await step.run("publish-analyst-complete-signal", async () => {
       await publish(
         researchChannel(sessionId)["agent-chunk"]({
           agent: "analyst",
