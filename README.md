@@ -1,6 +1,6 @@
 # Context Engineering Demo - AI Research Assistant
 
-A demo application showcasing Inngest's context engineering capabilities including rate limiting, durable execution, parallel processing, and observability. This app gathers research context from multiple sources and generates AI-powered responses using OpenAI's GPT-4.
+A demo application showcasing Inngest's context engineering capabilities including rate limiting, durable execution, parallel processing, and observability. This app gathers research context from multiple sources and generates AI-powered responses using multiple AI models through LiteLLM Proxy.
 
 ![AI Research Assistant](https://img.shields.io/badge/Powered%20by-Inngest-5B4FFF)
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
@@ -23,7 +23,7 @@ A demo application showcasing Inngest's context engineering capabilities includi
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Orchestration**: Inngest
-- **LLM**: OpenAI GPT-4
+- **LLM**: Multiple AI models via LiteLLM Proxy (OpenAI, Anthropic, Google, Mistral)
 - **Vector DB**: In-memory (demo) / Pinecone (production)
 - **UI**: React + Tailwind CSS
 - **APIs**: ArXiv, GitHub, Web Search
@@ -33,8 +33,8 @@ A demo application showcasing Inngest's context engineering capabilities includi
 ### Prerequisites
 
 - Node.js 18+ installed
-- Vercel AI Gateway API Key (required)
-  - [Signup here for $5 monthly credit](https://vercel.com/ai-gateway)
+- LiteLLM Proxy server running (configured at http://khoadue.me:4010)
+  - LiteLLM API key (if required by your proxy setup)
 - GitHub token (optional, for GitHub search)
 - SerpAPI key (optional, for web search)
 - Pinecone key (optional, for deployment)
@@ -53,10 +53,10 @@ npm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and add your API keys:
+Edit `.env.local` and add your API key:
 
 ```bash
-AI_GATEWAY_API_KEY=your_vercel-ai-gateway_api_key_here
+LITELLM_API_KEY=sk-your-litellm-api-key-here
 
 # Optional: GITHUB_TOKEN, SERP_API_KEY, etc.
 ```
@@ -103,7 +103,7 @@ Navigate to `http://localhost:3000`
 
 ### Required
 
-- `AI_GATEWAY_API_KEY` - Vercel AI Gateway API Key
+- `LITELLM_API_KEY` - LiteLLM API key (if required by your proxy setup)
 
 ### Optional (for development)
 
@@ -196,7 +196,7 @@ npm run upload-pdf ./research-papers/transformer-architecture.pdf
 - [Inngest Documentation](https://www.inngest.com/docs)
 - [Inngest Realtime Streaming Guide](./REALTIME_STREAMING.md) - **New!** Learn how we implemented live updates
 - [Next.js Documentation](https://nextjs.org/docs)
-- [Vercel AI Gateway documentation](https://vercel.com/docs/ai-gateway)
+- [LiteLLM documentation](https://docs.litellm.ai/docs/)
 - [Vercel AI SDK documentation](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text#streamtext)
 
 ## License

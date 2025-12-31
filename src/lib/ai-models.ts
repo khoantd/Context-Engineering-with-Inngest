@@ -1,8 +1,10 @@
-import { openai } from "@ai-sdk/openai";
-import { anthropic } from "@ai-sdk/anthropic";
-import { google } from "@ai-sdk/google";
-import { mistral } from "@ai-sdk/mistral";
-import { gateway } from "@ai-sdk/gateway";
+import { createOpenAI } from "@ai-sdk/openai";
+
+// LiteLLM Proxy configuration
+const litellmProxy = createOpenAI({
+  baseURL: "http://khoadue.me:4010",
+  apiKey: process.env.LITELLM_API_KEY || "sk-not-needed", // LiteLLM often doesn't need API key for local proxy
+});
 
 /**
  * AI Model configurations for different agents
@@ -10,19 +12,19 @@ import { gateway } from "@ai-sdk/gateway";
  */
 export const models = {
   // GPT-4: Deep analysis and detailed responses
-  analyst: gateway("openai/gpt-4-turbo"),
+  analyst: litellmProxy("gpt-4o"),
 
   // Claude: Summarization and concise explanations
-  summarizer: gateway("anthropic/claude-3.5-sonnet"),
+  summarizer: litellmProxy("gpt-4o"),
 
   // Gemini: Fact-checking and validation
-  factChecker: gateway("google/gemini-2.5-flash"),
+  factChecker: litellmProxy("gpt-4o-mini"),
 
   // Mistral: Topic classification and categorization
-  classifier: gateway("mistral/mistral-large"),
+  classifier: litellmProxy("gpt-4o"),
 
   // GPT-4: Final synthesis combining all agent outputs
-  synthesizer: gateway("openai/gpt-4-turbo"),
+  synthesizer: litellmProxy("gpt-4o"),
 };
 
 /**
