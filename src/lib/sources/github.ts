@@ -1,5 +1,11 @@
 import type { GithubResult } from "@/inngest/types";
 
+interface GithubRepository {
+  name?: string;
+  description?: string;
+  html_url?: string;
+}
+
 export async function fetchGithub(query: string): Promise<GithubResult[]> {
   if (!process.env.GITHUB_TOKEN) {
     console.log("GITHUB_TOKEN not set, skipping GitHub search");
@@ -25,7 +31,7 @@ export async function fetchGithub(query: string): Promise<GithubResult[]> {
     const data = await response.json();
 
     return (
-      data.items?.map((item: any) => ({
+      data.items?.map((item: GithubRepository) => ({
         source: "github" as const,
         text: item.description || item.name || "",
         title: item.name || "Untitled",

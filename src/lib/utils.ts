@@ -2,6 +2,16 @@
 
 import { AsyncIterableStream } from "ai";
 
+interface StreamMessage {
+  chunk: string;
+  isComplete: boolean;
+  timestamp: string;
+}
+
+interface PublishCallback<T = void> {
+  (message: StreamMessage): Promise<T>;
+}
+
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength - 3) + "...";
@@ -19,9 +29,9 @@ export function formatTimestamp(timestamp: string): string {
   }
 }
 
-export async function publishTokenByTokenUpdates(
+export async function publishTokenByTokenUpdates<T>(
   textStream: AsyncIterableStream<string>,
-  callback: (message: any) => Promise<any>
+  callback: PublishCallback<T>
 ) {
   let fullResponse = "";
 

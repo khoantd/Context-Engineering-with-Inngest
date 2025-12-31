@@ -1,5 +1,11 @@
 import type { WebSearchResult } from "@/inngest/types";
 
+interface SerpApiResult {
+  snippet?: string;
+  title?: string;
+  link?: string;
+}
+
 export async function fetchWebSearch(query: string): Promise<WebSearchResult[]> {
   if (!process.env.SERP_API_KEY) {
     console.log("SERP_API_KEY not set, skipping web search");
@@ -20,7 +26,7 @@ export async function fetchWebSearch(query: string): Promise<WebSearchResult[]> 
     const data = await response.json();
 
     return (
-      data.organic_results?.map((result: any) => ({
+      data.organic_results?.map((result: SerpApiResult) => ({
         source: "websearch" as const,
         text: result.snippet || "",
         title: result.title || "Untitled",

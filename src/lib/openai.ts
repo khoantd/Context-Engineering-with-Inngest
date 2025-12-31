@@ -11,11 +11,7 @@ export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
 
   try {
     // Use AI SDK's embed function with OpenAI provider
-    // Support configurable dimensions via EMBEDDING_DIMENSION env var (default: 1536)
-    const dimension = parseInt("1024");
-    const embeddingModel = openai.embedding("text-embedding-3-small", {
-      dimensions: dimension,
-    });
+    const embeddingModel = openai.embedding("text-embedding-3-small");
     
     const embeddings: number[][] = [];
     

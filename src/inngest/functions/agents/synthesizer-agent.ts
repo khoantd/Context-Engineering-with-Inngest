@@ -16,7 +16,7 @@ export const synthesizerAgent = inngest.createFunction(
   },
   { event: "agent/synthesize" },
   async ({ event, step, publish }) => {
-    const { query, agentResults, sessionId, userId } = event.data;
+    const { query, agentResults, sessionId } = event.data;
     const startTime = +new Date(event.ts!);
 
     await step.run("publish-synthesizer-start", async () => {

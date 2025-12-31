@@ -3,6 +3,7 @@ import { researchChannel } from "../../channels";
 import { models, modelInfo } from "@/lib/ai-models";
 import { streamText } from "ai";
 import { publishTokenByTokenUpdates } from "@/lib/utils";
+import type { ContextItem } from "../../types";
 
 export const summarizerAgent = inngest.createFunction(
   {
@@ -17,7 +18,7 @@ export const summarizerAgent = inngest.createFunction(
   },
   { event: "agent/summarize" },
   async ({ event, step, publish }) => {
-    const { query, contexts, sessionId, userId } = event.data;
+    const { query, contexts, sessionId } = event.data;
     const startTime = +new Date(event.ts!);
 
     await step.run("publish-summarizer-start", async () => {
@@ -49,7 +50,10 @@ export const summarizerAgent = inngest.createFunction(
       );
 
       const contextText = contexts
-        .map((c: any, i: number) => `[${i + 1}] ${c.source}: ${c.text}`)
+        .map((c: ContextItem | null, i: number) => {
+          if (!c) return `[${i + 1}] No context available`;
+          return `[${i + 1}] ${c.source}: ${c.text}`;
+        })
         .join("\n\n");
 
       const { textStream } = await streamText({
@@ -64,7 +68,7 @@ ${contextText}
 Provide a concise summary with key points:`,
       });
 
-      let fullResponse = await publishTokenByTokenUpdates(
+      const fullResponse = await publishTokenByTokenUpdates(
         textStream,
         async (message) => {
           return publish(

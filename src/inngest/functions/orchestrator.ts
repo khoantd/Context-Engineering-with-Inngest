@@ -6,6 +6,7 @@ import { summarizerAgent } from "./agents/summarizer-agent";
 import { factCheckerAgent } from "./agents/fact-checker-agent";
 import { classifierAgent } from "./agents/classifier-agent";
 import { synthesizerAgent } from "./agents/synthesizer-agent";
+import type { ContextItem } from "../types";
 
 export const orchestrateMultiAgent = inngest.createFunction(
   {
@@ -83,7 +84,7 @@ export const orchestrateMultiAgent = inngest.createFunction(
         function: analystAgent,
         data: {
           query,
-          contexts: topContexts as any,
+          contexts: topContexts as (ContextItem | null)[],
           sessionId,
           userId,
         },
@@ -92,7 +93,7 @@ export const orchestrateMultiAgent = inngest.createFunction(
         function: summarizerAgent,
         data: {
           query,
-          contexts: topContexts as any,
+          contexts: topContexts as (ContextItem | null)[],
           sessionId,
           userId,
         },
@@ -101,7 +102,7 @@ export const orchestrateMultiAgent = inngest.createFunction(
         function: factCheckerAgent,
         data: {
           query,
-          contexts: topContexts as any,
+          contexts: topContexts as (ContextItem | null)[],
           sessionId,
           userId,
         },
@@ -110,7 +111,7 @@ export const orchestrateMultiAgent = inngest.createFunction(
         function: classifierAgent,
         data: {
           query,
-          contexts: topContexts as any,
+          contexts: topContexts as (ContextItem | null)[],
           sessionId,
           userId,
         },
