@@ -1,0 +1,58 @@
+# Context Engineering with Inngest - Project Rules
+
+## Core Principles
+- This is a demo showcasing Inngest's context engineering capabilities
+- Focus on rate limiting, durable execution, parallel processing, and observability
+- Maintain clean separation between frontend, backend, and Inngest functions
+- Prioritize real-time user experience with proper error handling
+
+## Architecture Guidelines
+- Use Inngest for all orchestration and workflow management
+- Implement fan-out/fan-in patterns for multi-agent processing
+- Leverage Inngest Realtime for live progress updates
+- Maintain type safety with TypeScript throughout the stack
+
+## Code Style
+- Use TypeScript strict mode
+- Follow Next.js 15 App Router conventions
+- Implement proper error boundaries and loading states
+- Use Tailwind CSS for styling with consistent dark theme
+- Keep components focused and reusable
+
+## Inngest Specific Rules
+- Always define proper rate limits and concurrency controls
+- Use step.run() for side effects and step.invoke() for function calls
+- Publish real-time updates for all major workflow steps
+- Implement proper retry logic and error handling
+- Use typed event schemas in the client
+
+## AI Integration
+- Support multiple AI providers (OpenAI, Anthropic, Google, Mistral)
+- Implement proper token usage tracking
+- Use streaming responses for better UX
+- Handle API rate limits gracefully
+
+## Data Sources
+- Implement parallel fetching with proper rate limiting
+- Use semantic ranking for context relevance
+- Support both in-memory and production vector databases
+- Handle external API failures gracefully
+
+## Testing & Deployment
+- Test Inngest functions thoroughly
+- Verify real-time subscriptions work properly
+- Ensure environment variables are properly documented
+- Test rate limiting behavior under load
+
+## File Organization
+- `/src/inngest/functions/` - All Inngest workflow functions
+- `/src/inngest/functions/agents/` - Specialized AI agent functions
+- `/src/lib/sources/` - External data source integrations
+- `/src/components/` - React components with real-time features
+- `/scripts/` - Utility scripts for setup and maintenance
+
+## Performance Considerations
+- Minimize cold starts for Inngest functions
+- Use efficient embedding generation and caching
+- Optimize real-time subscription token refresh
+- Implement proper cleanup for long-running workflows
